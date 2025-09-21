@@ -1,0 +1,237 @@
+#include <iostream>
+#include <fstream>
+#include <string>
+#include <iomanip> // for formatting
+#include <windows.h>  // For Windows sleep
+using namespace std;
+class Student {
+public:
+    string name, course, address;
+    int rollNo;
+    float grade;
+    void input() 
+	{
+        cout << "\tEnter student details:\n";
+        cout << "\tRoll No: ";
+        cin >> rollNo;   // First enter roll number
+        cin.ignore();  // To clear the buffer before reading the next line
+        cout << "\tName: ";
+        getline(cin, name);      // Use getline to handle multi-word name
+        cout << "\tCourse: ";
+        getline(cin, course);    // Use getline to handle multi-word course
+        cout << "\tAddress: ";
+        getline(cin, address);   // Use getline to handle multi-word address
+        cout << "\tGrade: ";
+        cin >> grade;     // Finally, enter grade
+    }
+    void display() 
+	{
+        // Display the details in a structured, aligned way
+        cout << "\t---------------------------------------------\n";
+        cout << "\tRoll No: " << setw(5) << rollNo << endl;
+        cout << "\tName: " << setw(15) << name << endl;
+        cout << "\tCourse: " << setw(10) << course << endl;
+        cout << "\tAddress: " << setw(15) << address << endl;
+        cout << "\tGrade: " << setw(10) << fixed << setprecision(2) << grade << endl;
+        cout << "\t---------------------------------------------\n";
+        system("pause"); 
+    }
+};
+void addStudent(Student s[], int &n)
+ {
+    if (n < 100) 
+	{
+        s[n].input();
+        n++;
+        cout << "\tStudent added successfully.\n";
+
+        // Sleep for 2 seconds before asking whether to add another student
+        cout << "\tPausing for a moment...\n";
+        Sleep(2000);  // Sleep for 2 seconds (2000 milliseconds)
+
+        char continueAdding;
+        cout << "\tDo you want to add another student? (Y/N): ";
+        cin >> continueAdding;
+        cin.ignore(10000, '\n');  // To clear the input buffer after reading continueAdding
+
+        // If user enters 'Y' or 'y', continue adding students
+        if (continueAdding == 'Y' || continueAdding == 'y')
+		{
+        	system("cls");
+            addStudent(s, n);  // Call addStudent recursively to add another student
+        }
+    } 
+	else
+	{
+        cout << "Maximum number of students reached.\n";
+    }
+}
+
+void searchStudent(Student s[], int n, int rollNo) {
+    bool found = false;
+    for (int i = 0; i < n; i++) {
+        if (s[i].rollNo == rollNo) {
+            s[i].display();
+            found = true;
+            break;
+        }
+    }
+    if (!found) {
+        cout << "\tStudent not found.\n";
+    }
+    cin.ignore(10000, '\n'); // Clear the buffer manually (if needed after numeric input)
+}
+
+void updateStudent(Student s[], int n, int rollNo) {
+    bool found = false;
+    for (int i = 0; i < n; i++) {
+        if (s[i].rollNo == rollNo) {
+            s[i].input();
+            found = true;
+            break;
+        }
+    }
+    if (!found) {
+        cout << "\tStudent not found.\n";
+    }
+}
+
+void deleteStudent(Student s[], int &n, int rollNo) {
+    bool found = false;
+    for (int i = 0; i < n; i++) {
+        if (s[i].rollNo == rollNo) {
+            for (int j = i; j < n - 1; j++) {
+                s[j] = s[j + 1];
+            }
+            n--;
+            found = true;
+            cout << "\tStudent deleted.\n";
+            system("pause"); 
+            break;
+        }
+    }
+    if (!found) {
+        cout << "\tStudent not found.\n";
+        system("pause"); 
+    }
+}
+
+void displayAllStudents(Student s[], int n) {
+    cout << "\tList of All Students:\n";
+    for (int i = 0; i < n; i++) {
+        s[i].display();
+    }
+}
+
+void saveDataToFile(Student s[], int n) {
+    ofstream file("students.txt");
+    if (file.is_open()) {
+        for (int i = 0; i < n; i++) {
+            file << s[i].rollNo << endl;   // Save roll number first
+            file << s[i].name << endl;
+            file << s[i].course << endl;
+            file << s[i].address << endl;
+            file << s[i].grade << endl;
+        }
+        file.close();
+        cout << "\tData saved to file.\n";
+    } else {
+        cout << "\tError saving data to file.\n";
+    }
+}
+
+void loadDataFromFile(Student s[], int &n) {
+    ifstream file("students.txt");
+    if (file.is_open()) {
+        int i = 0;
+        while (file >> s[i].rollNo >> ws) {  // ws ignores whitespace
+            getline(file, s[i].name);
+            getline(file, s[i].course);
+            getline(file, s[i].address);
+            file >> s[i].grade;
+            i++;
+        }
+        n = i;
+        file.close();
+        cout << "\tData loaded from file.\n";
+    } else {
+        cout << "\tError loading data from file or file is empty.\n";
+    }
+}
+
+int main() {
+    const int MAX_STUDENTS = 100;
+    Student students[MAX_STUDENTS];
+    int numStudents = 0;
+
+    loadDataFromFile(students, numStudents);  // Load existing data from file
+
+    int choice;
+    do {
+    	system("cls");
+        cout << "\tWelcome To University Management System" << endl;
+        cout << "\t***************************************" << endl;
+        cout << "\t1. Add Student."<< endl;
+        cout << "\t2. Search Student."<< endl;
+        cout << "\t3. Update Student."<< endl;
+        cout << "\t4. Delete Student."<< endl;
+        cout << "\t5. Display All Students."<< endl;
+        cout << "\t6. Save Data to File."<< endl;
+        cout << "\t7. Exit."<< endl;
+        cout << "\tEnter your choice: ";
+        cin >> choice;
+
+        switch (choice) {
+            case 1:
+            	system("cls");
+                addStudent(students, numStudents);  // Add student and handle continuation
+                break;
+            case 2: {
+            	system("cls");
+                int rollNo;
+                cout << "\tEnter roll number to search: ";
+                cin >> rollNo;
+                cin.ignore(10000, '\n');
+                searchStudent(students, numStudents, rollNo);
+                system("pause"); 
+				break;
+            }
+            case 3: {
+            	system("cls");
+                int rollNo;
+                cout << "\tEnter roll number to update: ";
+                cin >> rollNo;
+                updateStudent(students, numStudents, rollNo);
+                system("pause"); 
+                break;
+            }
+            case 4: {
+            	system("cls");
+                int rollNo;
+                cout << "\tEnter roll number to delete: ";
+                cin >> rollNo;
+                deleteStudent(students, numStudents, rollNo);
+                break;
+            }
+            case 5:
+            	system("cls");
+                displayAllStudents(students, numStudents);
+                system("pause"); 
+                break;
+            case 6:
+            	system("cls");
+                saveDataToFile(students, numStudents);
+                break;
+            case 7:
+            	system("cls");
+                cout << "\tExiting...\n";
+                // Sleep for 2 seconds before exiting
+                Sleep(2000);  // Sleep for 2 seconds (2000 milliseconds)
+                break;
+            default:
+                cout << "\tInvalid choice.\n";
+        }
+    } while (choice != 7);
+
+    return 0;
+}
